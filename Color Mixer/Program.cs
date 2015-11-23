@@ -17,6 +17,13 @@ namespace Color_Mixer
             Blue += other.Blue;
         }
 
+        internal void Multiply(int num)
+        {
+            Red *= num;
+            Green *= num;
+            Blue *= num;
+        }
+
         internal void Divide(int num)
         {
             Red /= num;
@@ -59,80 +66,130 @@ namespace Color_Mixer
 
         static void Main(string[] args)
         {
-            Console.Write("Number of votes: ");
-            int numVotes = 0;
             do
             {
-                string line = Console.ReadLine();
-                if (int.TryParse(line, out numVotes))
+                int numVotes = ReadNonNegativeInt("Votes needed (0 to quit)");
+                if (numVotes == 0) break;
+
+                int votesSoFar = ReadNonNegativeInt("Votes so far");
+
+                Color target = ReadColor("Color (red green blue)");
+
+                Color current;
+                if (votesSoFar > 0)
                 {
-                    break;
+                    current = ReadColor("Current color (red green blue)");
+                    current.Multiply(votesSoFar);
                 }
+                else
+                    current = new Color();
+
+                NamedColor[] colorSeq = new NamedColor[numVotes];
+                Color total = new Color();
+                for (int i = votesSoFar; i < colorSeq.Length; i++)
+                {
+                    double bestDiff = 0.0;
+                    for (int k = 0; k < colors.Length; k++)
+                    {
+                        total.Gray(0);
+                        total.Add(current);
+                        for (int j = votesSoFar; j < i; j++)
+                        {
+                            total.Add(colorSeq[j]);
+                        }
+                        total.Add(colors[k]);
+                        total.Divide(i + 1);
+                        double diff = Diff(total, target);
+                        if (colorSeq[i] == null || diff < bestDiff)
+                        {
+                            colorSeq[i] = colors[k];
+                            bestDiff = diff;
+                        }
+                        if (diff < 10 && i < colors.Length - 1)
+                        {
+                            colorSeq[i + 1] = final;
+                        }
+                    }
+                }
+
+                total.Gray(0);
+                total.Add(current);
+                Console.WriteLine();
+                Console.WriteLine("Sequence:");
+                int count = votesSoFar;
+                for (int i = votesSoFar; i < colorSeq.Length; i++)
+                {
+                    if (colorSeq[i] == final)
+                    {
+                        Console.WriteLine("  final");
+                        break;
+                    }
+                    total.Add(colorSeq[i]);
+                    count++;
+                    Console.WriteLine("  " + colorSeq[i].Name); // + "     --> " + total.Red / (i+1) + " " + total.Green / (i + 1) + " " + total.Blue / (i + 1));
+                }
+                total.Divide(count);
+                Console.WriteLine("Resulting color: " + total.Red + " " + total.Green + " " + total.Blue);
+                Console.WriteLine("Target color   : " + target.Red + " " + target.Green + " " + target.Blue);
+                Console.WriteLine("Difference     : " + (target.Red - total.Red) + " " + (target.Green - total.Green) + " " + (target.Blue - total.Blue));
+                Console.WriteLine("Difference     : " + Diff(total, target));
+                Console.WriteLine();
             } while (true);
-            Console.Write("Color: ");
-            Color target = new Color();
+        }
+
+        private static void Prompt(string prompt)
+        {
+            if (prompt != null && prompt.Trim().Length > 0)
+                Console.Write(prompt + ": ");
+        }
+
+        private static Color ReadColor(string prompt)
+        {
+            Prompt(prompt);
+            return GetColor();
+        }
+
+        private static Color GetColor()
+        {
+            Color color = new Color();
             string[] colorValues = null;
             do
             {
                 string line = Console.ReadLine();
-                colorValues = line.Split();
+                colorValues = line.Split(new char[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
                 if (colorValues.Length == 3
-                    && int.TryParse(colorValues[0], out target.Red)
-                    && int.TryParse(colorValues[1], out target.Green)
-                    && int.TryParse(colorValues[2], out target.Blue)
-                    && InRange(target.Red)
-                    && InRange(target.Green)
-                    && InRange(target.Blue)
+                    && int.TryParse(colorValues[0], out color.Red)
+                    && int.TryParse(colorValues[1], out color.Green)
+                    && int.TryParse(colorValues[2], out color.Blue)
+                    && InRange(color.Red)
+                    && InRange(color.Green)
+                    && InRange(color.Blue)
                     )
                 {
                     break;
                 }
             } while (true);
-            Console.WriteLine("Target color: " + target.Red + " " + target.Green + " " + target.Blue);
+            return color;
+        }
 
-            NamedColor[] colorSeq = new NamedColor[numVotes];
-            Color total = new Color();
-            for (int i = 0; i < colorSeq.Length; i++)
+        private static int ReadNonNegativeInt(string prompt)
+        {
+            Prompt(prompt);
+            return GetNonNegativeInt();
+        }
+
+        private static int GetNonNegativeInt()
+        {
+            int num = 0;
+            do
             {
-                double bestDiff = 0.0;
-                for (int k = 0; k < colors.Length; k++)
+                string line = Console.ReadLine();
+                if (int.TryParse(line, out num) && num >= 0)
                 {
-                    total.Gray(0);
-                    for (int j = 0; j < i; j++)
-                    {
-                        total.Add(colorSeq[j]);
-                    }
-                    total.Add(colors[k]);
-                    total.Divide(i + 1);
-                    double diff = Diff(total, target);
-                    if (colorSeq[i] == null || diff < bestDiff)
-                    {
-                        colorSeq[i] = colors[k];
-                        bestDiff = diff;
-                    }
-                    if (diff < 10 && i < colors.Length - 1)
-                    {
-                        colorSeq[i + 1] = final;
-                    }
-                }
-            }
-            total.Gray(0);
-            Console.WriteLine("Sequence:");
-            int count = 0;
-            for (int i = 0; i < colorSeq.Length; i++)
-            {
-                if (colorSeq[i] == final)
-                {
-                    Console.WriteLine("final");
                     break;
                 }
-                total.Add(colorSeq[i]);
-                count++;
-                Console.WriteLine(colorSeq[i].Name); // + "     --> " + total.Red / (i+1) + " " + total.Green / (i + 1) + " " + total.Blue / (i + 1));
-            }
-            total.Divide(count);
-            Console.WriteLine("Resulting color: " + total.Red + " " + total.Green + " " + total.Blue);
-            Console.ReadLine();
+            } while (true);
+            return num;
         }
 
         private static double Diff(Color c1, Color c2)
