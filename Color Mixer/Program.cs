@@ -185,6 +185,7 @@ namespace Color_Mixer
                 {
                     break;
                 }
+                Console.Write("Try again. ");
             } while (true);
             return color;
         }
@@ -205,6 +206,7 @@ namespace Color_Mixer
                 {
                     break;
                 }
+                Console.Write("Try again. ");
             } while (true);
             return num;
         }
