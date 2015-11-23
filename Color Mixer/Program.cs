@@ -112,6 +112,7 @@ namespace Color_Mixer
                     }
                 }
 
+                Dictionary<string, int> counts = new Dictionary<string, int>();
                 total.Gray(0);
                 total.Add(current);
                 Console.WriteLine();
@@ -125,6 +126,7 @@ namespace Color_Mixer
                         break;
                     }
                     total.Add(colorSeq[i]);
+                    Inc(colorSeq[i].Name, counts);
                     count++;
                     Console.WriteLine("  " + colorSeq[i].Name); // + "     --> " + total.Red / (i+1) + " " + total.Green / (i + 1) + " " + total.Blue / (i + 1));
                 }
@@ -133,8 +135,19 @@ namespace Color_Mixer
                 Console.WriteLine("Target color   : " + target.Red + " " + target.Green + " " + target.Blue);
                 Console.WriteLine("Difference     : " + (target.Red - total.Red) + " " + (target.Green - total.Green) + " " + (target.Blue - total.Blue));
                 Console.WriteLine("Difference     : " + Diff(total, target));
+                Console.WriteLine("Summary:");
+                foreach (string key in counts.Keys)
+                    Console.WriteLine("  " + counts[key] + "x " + key);
                 Console.WriteLine();
             } while (true);
+        }
+
+        private static void Inc(string name, Dictionary<string, int> counts)
+        {
+            if (counts.ContainsKey(name))
+                counts[name]++;
+            else
+                counts[name] = 1;
         }
 
         private static void Prompt(string prompt)
