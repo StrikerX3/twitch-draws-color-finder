@@ -118,11 +118,13 @@ namespace Color_Mixer
                 Console.WriteLine();
                 Console.WriteLine("Sequence:");
                 int count = votesSoFar;
+                bool hasFinal = false;
                 for (int i = votesSoFar; i < colorSeq.Length; i++)
                 {
                     if (colorSeq[i] == final)
                     {
                         Console.WriteLine("  final");
+                        hasFinal = true;
                         break;
                     }
                     total.Add(colorSeq[i]);
@@ -138,6 +140,8 @@ namespace Color_Mixer
                 Console.WriteLine("Summary:");
                 foreach (string key in counts.Keys)
                     Console.WriteLine("  " + counts[key] + "x " + key);
+                if (hasFinal)
+                    Console.WriteLine("  final");
                 Console.WriteLine();
             } while (true);
         }
